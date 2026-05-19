@@ -1,0 +1,45 @@
+{
+  "name": "canvas-image",
+  "version": "0.0.0",
+  "author": "zcdc <kuanglong0312@sina.com>",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@leafer-in/animate": "^2.1.0",
+    "@leafer-in/arrow": "^2.1.0",
+    "@leafer-in/color": "^2.1.0",
+    "@leafer-in/editor": "^2.1.0",
+    "@leafer-in/flow": "^2.1.0",
+    "@leafer-in/html": "^2.1.0",
+    "@leafer-in/robot": "^2.1.0",
+    "@leafer-in/scroll": "^2.1.0",
+    "@leafer-in/state": "^2.1.0",
+    "@leafer-in/text-editor": "^2.1.0",
+    "@leafer-in/view": "^2.1.0",
+    "leafer-draw": "^2.1.0",
+    "leafer-editor": "^2.1.0",
+    "leafer-ui": "^2.1.0",
+    "vue": "^3.4.37"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/node": "^20.8.7",
+    "@vitejs/plugin-vue": "^5.1.2",
+    "sass": "^1.99.0",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.1",
+    "vue-tsc": "^2.0.29"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "esbuild"
+    ]
+  }
+}
