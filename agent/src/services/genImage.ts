@@ -14,4 +14,3 @@ export async function genImage(prompt: string) {
     });
     return image.base64;
 }
-console.log(genImage('A teddy bear wearing a black hat hiking in the mountains'))

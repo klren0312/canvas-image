@@ -1,3 +1,6 @@
+<template>
+  <div id="leafer-view"></div>
+</template>
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { App, Rect, Text, Group, PointerEvent } from 'leafer-ui'
@@ -109,11 +112,6 @@ const createText = (text: string): Text => {
   })
 }
 </script>
-
-<template>
-  <div id="leafer-view"></div>
-</template>
-
 <style scoped>
 #leafer-view {
   width: 100%;
