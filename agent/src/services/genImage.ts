@@ -1,16 +1,34 @@
-import { generateImage } from "ai";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import "dotenv/config";
 
-const kolors = createOpenAICompatible({
-  name: "kolors",
-  baseURL: process.env.IMAGE_URL || "",
-  apiKey: process.env.IMAGE_KEY || "",
-});
+const API_URL = "https://api.siliconflow.cn/v1/images/generations";
+const API_KEY = process.env.IMAGE_KEY || "";
+
 export async function genImage(prompt: string) {
-  const { image } = await generateImage({
-    model: kolors.imageModel("Kwai-Kolors/Kolors"),
-    prompt: prompt,
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "Kwai-Kolors/Kolors",
+      prompt,
+      image_size: "1024x1024",
+      batch_size: 1,
+      num_inference_steps: 20,
+      guidance_scale: 7.5,
+    }),
   });
-  return image.base64;
+
+  if (!response.ok) {
+    throw new Error(`图片生成失败: ${response.statusText}`);
+  }
+
+  const data = await response.json() as { images: { url: string }[] };
+  return data.images[0].url;
 }
+
+(async () => {
+  const url = await genImage("太阳");
+  console.log(url);
+})();
