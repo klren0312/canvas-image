@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import path from "node:path";
 import { config } from "./config";
 import { success, fail } from "./response";
 import { genImage } from "./services/genImage";
@@ -18,6 +19,16 @@ app.use((req: Request, res: Response, next) => {
 });
 
 app.use(express.json());
+
+const staticDir = path.resolve(
+  process.cwd(),
+  config.nodeEnv === "production" ? "dist/public" : "public"
+);
+app.use(express.static(staticDir));
+
+app.get("/{*splat}", (req: Request, res: Response) => {
+  res.sendFile(path.join(staticDir, "index.html"));
+});
 
 app.post("/genImage", async (req: Request, res: Response) => {
   try {

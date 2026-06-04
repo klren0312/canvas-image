@@ -13,6 +13,5 @@ declare module 'vue' {
   export interface GlobalComponents {
     ElConfigProvider: typeof import('element-plus/es')['ElConfigProvider']
     ImageCanvas: typeof import('./src/components/ImageCanvas.vue')['default']
-    SelectSide: typeof import('./src/components/SelectSide.vue')['default']
   }
 }

@@ -22,4 +22,7 @@ export default defineConfig({
       '@': '/src',
     },
   },
+  build: {
+    outDir: 'agent/public',
+  },
 })
