@@ -24,11 +24,6 @@ export async function genImage(prompt: string) {
     throw new Error(`图片生成失败: ${response.statusText}`);
   }
 
-  const data = await response.json() as { images: { url: string }[] };
+  const data = (await response.json()) as { images: { url: string }[] };
   return data.images[0].url;
 }
-
-(async () => {
-  const url = await genImage("太阳");
-  console.log(url);
-})();
