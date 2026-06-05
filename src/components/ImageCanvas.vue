@@ -21,7 +21,7 @@ import "leafer-editor";
 import "@leafer-in/state";
 import { Flow } from "@leafer-in/flow";
 
-const API_BASE = "http://localhost:3000";
+const API_BASE = "";
 const prompt = ref("");
 const loading = ref(false);
 
@@ -65,7 +65,7 @@ const handleSubmit = async () => {
 
 const generateAndInsertImage = async (element: TextElement) => {
     // 生成图片描述
-    const imagePrompt = `${element.description}，${element.name}`;
+    const imagePrompt = `${element.description}，${element.name}，透明背景`;
 
     // 轮询请求图片生成
     let imageUrl: string | null = null;
