@@ -39,6 +39,9 @@ const handleSubmit = async () => {
     if (!prompt.value.trim() || loading.value) return;
 
     loading.value = true;
+    const imageResults: { name: string; prompt: string; imageUrl: string | null }[] = [];
+    let textUsage: { promptTokens: number; completionTokens: number; totalTokens: number } | undefined;
+
     try {
         // 1. 请求 genText 生成文本元素
         const textRes = await fetch(`${API_BASE}/genText`, {
@@ -47,18 +50,34 @@ const handleSubmit = async () => {
             body: JSON.stringify({ prompt: prompt.value }),
         });
         const { data } = (await textRes.json()) as {
-            data: { elements: TextElement[] };
+            data: { elements: TextElement[]; usage: { promptTokens: number; completionTokens: number; totalTokens: number } };
         };
         const elements = data.elements;
+        textUsage = data.usage;
 
         // 2. 为每个元素生成图片或插入文字
         for (const element of elements) {
             if (element.type === "text") {
                 insertTextToCanvas(element);
             } else {
-                await generateAndInsertImage(element);
+                const result = await generateAndInsertImage(element);
+                imageResults.push(result);
             }
         }
+
+        // 3. 记录日志
+        await fetch(`${API_BASE}/genLog`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                prompt: prompt.value,
+                textResult: elements,
+                imageResults,
+                tokensPrompt: textUsage?.promptTokens ?? 0,
+                tokensCompletion: textUsage?.completionTokens ?? 0,
+                tokensTotal: textUsage?.totalTokens ?? 0,
+            }),
+        });
 
         prompt.value = "";
     } catch (err) {
@@ -69,14 +88,12 @@ const handleSubmit = async () => {
     }
 };
 
-const generateAndInsertImage = async (element: TextElement) => {
-    // 生成图片描述
+const generateAndInsertImage = async (element: TextElement): Promise<{ name: string; prompt: string; imageUrl: string | null }> => {
     const imagePrompt = `${element.description}，${element.name}`;
 
-    // 轮询请求图片生成
     let imageUrl: string | null = null;
     let attempts = 0;
-    const maxAttempts = 30; // 最多轮询30次
+    const maxAttempts = 30;
 
     while (!imageUrl && attempts < maxAttempts) {
         try {
@@ -97,17 +114,16 @@ const generateAndInsertImage = async (element: TextElement) => {
         }
 
         attempts++;
-        // 等待1秒后重试
         await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
     if (!imageUrl) {
         console.error(`元素 "${element.name}" 图片生成超时`);
-        return;
+        return { name: element.name, prompt: imagePrompt, imageUrl: null };
     }
 
-    // 将图片插入到画布
     insertImageToCanvas(element, imageUrl);
+    return { name: element.name, prompt: imagePrompt, imageUrl };
 };
 
 const insertTextToCanvas = (element: TextElement) => {

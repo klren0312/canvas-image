@@ -4,6 +4,7 @@ import { config } from "./config";
 import { success, fail } from "./response";
 import { genImage } from "./services/genImage";
 import { genText } from "./services/genText";
+import { initDb, insertLog } from "./services/db";
 
 const app = express();
 
@@ -52,14 +53,38 @@ app.post("/genText", async (req: Request, res: Response) => {
       fail(res, "prompt is required");
       return;
     }
-    const elements = await genText(prompt);
-    success(res, { elements });
+    const { elements, usage } = await genText(prompt);
+    success(res, { elements, usage });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "unknown error";
     fail(res, msg);
   }
 });
 
-app.listen(config.port, () => {
-  console.log(`Server is running on http://localhost:${config.port} [${config.nodeEnv}]`);
+app.post("/genLog", (req: Request, res: Response) => {
+  try {
+    const { prompt, textResult, imageResults, tokensPrompt, tokensCompletion, tokensTotal } = req.body;
+    if (!prompt) {
+      fail(res, "prompt is required");
+      return;
+    }
+    insertLog({
+      prompt,
+      textResult: JSON.stringify(textResult),
+      imageResults: JSON.stringify(imageResults ?? []),
+      tokensPrompt,
+      tokensCompletion,
+      tokensTotal,
+    });
+    success(res, { logged: true });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "unknown error";
+    fail(res, msg);
+  }
+});
+
+initDb().then(() => {
+  app.listen(config.port, () => {
+    console.log(`Server is running on http://localhost:${config.port} [${config.nodeEnv}]`);
+  });
 });
