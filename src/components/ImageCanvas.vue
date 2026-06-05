@@ -26,8 +26,10 @@ const prompt = ref("");
 const loading = ref(false);
 
 interface TextElement {
+    type: "image" | "text";
     name: string;
-    description: string;
+    description?: string;
+    text?: string;
     z: number;
     x: number;
     y: number;
@@ -49,9 +51,13 @@ const handleSubmit = async () => {
         };
         const elements = data.elements;
 
-        // 2. 为每个元素生成图片
+        // 2. 为每个元素生成图片或插入文字
         for (const element of elements) {
-            await generateAndInsertImage(element);
+            if (element.type === "text") {
+                insertTextToCanvas(element);
+            } else {
+                await generateAndInsertImage(element);
+            }
         }
 
         prompt.value = "";
@@ -65,7 +71,7 @@ const handleSubmit = async () => {
 
 const generateAndInsertImage = async (element: TextElement) => {
     // 生成图片描述
-    const imagePrompt = `${element.description}，${element.name}，透明背景`;
+    const imagePrompt = `${element.description}，${element.name}`;
 
     // 轮询请求图片生成
     let imageUrl: string | null = null;
@@ -102,6 +108,32 @@ const generateAndInsertImage = async (element: TextElement) => {
 
     // 将图片插入到画布
     insertImageToCanvas(element, imageUrl);
+};
+
+const insertTextToCanvas = (element: TextElement) => {
+    if (!leaferApp) {
+        console.error("Leafer 实例未初始化");
+        return;
+    }
+
+    const { width = 1080, height = 960 } = leaferApp;
+    const x = element.x * width;
+    const y = element.y * height;
+
+    const textEl = new Text({
+        x,
+        y,
+        text: element.text || element.name,
+        fontSize: 32,
+        fill: "#ffffff",
+        fontWeight: "bold",
+        textAlign: "center",
+        zIndex: element.z,
+        editable: true,
+    });
+
+    leaferApp.tree.add(textEl);
+    console.log(`已插入文字元素 "${element.name}" 到画布`);
 };
 
 let leaferApp: App | null = null;
