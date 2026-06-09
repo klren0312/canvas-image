@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import initSqlJs from "sql.js";
 
 const DB_DIR = path.resolve(process.cwd(), "data");
 const DB_PATH = path.join(DB_DIR, "logs.db");
@@ -18,8 +19,9 @@ interface LogInput {
 }
 
 async function loadDb() {
-  const initSqlJs = (await import("sql.js")).default;
-  const SQL = await initSqlJs();
+  const SQL = await initSqlJs({
+    locateFile: (file: string) => path.join(__dirname, file),
+  });
   let database: Awaited<ReturnType<typeof SQL.Database>>;
   if (fs.existsSync(DB_PATH)) {
     const buffer = fs.readFileSync(DB_PATH);
