@@ -21,7 +21,7 @@ import "leafer-editor";
 import "@leafer-in/state";
 import { Flow } from "@leafer-in/flow";
 
-const API_BASE = "";
+const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 const prompt = ref("");
 const loading = ref(false);
 
