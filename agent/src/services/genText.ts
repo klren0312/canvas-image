@@ -23,8 +23,11 @@ const TextElementArraySchema = z.array(TextElementSchema);
 
 export type TextElement = z.infer<typeof TextElementSchema>;
 
-export async function genText(prompt: string): Promise<TextElement[]> {
-  const { text } = await generateText({
+export async function genText(prompt: string): Promise<{
+  elements: TextElement[];
+  usage: { promptTokens: number; completionTokens: number; totalTokens: number };
+}> {
+  const result = await generateText({
     model: textProvider.chatModel("openrouter/owl-alpha"),
     prompt: `将以下描述拆解成元素列表，只返回JSON数组，不要其他内容。每个元素需要包含：
 - type: 元素类型，"image"表示需要生成图片，"text"表示直接显示文字
@@ -46,9 +49,17 @@ export async function genText(prompt: string): Promise<TextElement[]> {
 "森林"作为标题，下面是树和猫 -> [{"type":"text","name":"标题","text":"森林","z":90,"x":0.5,"y":0.1},{"type":"image","name":"背景","description":"森林景色","z":0,"x":0.5,"y":0.5},{"type":"image","name":"树","description":"一棵树，透明背景","z":20,"x":0.5,"y":0.4},{"type":"image","name":"猫","description":"一只猫，透明背景","z":60,"x":0.5,"y":0.6}]
 `,
   });
-  const cleaned = text
+  const cleaned = result.text
     .replace(/```json\n?/g, "")
     .replace(/```\n?/g, "")
     .trim();
-  return TextElementArraySchema.parse(JSON.parse(cleaned));
+  const elements = TextElementArraySchema.parse(JSON.parse(cleaned));
+  return {
+    elements,
+    usage: {
+      promptTokens: result.usage.promptTokens,
+      completionTokens: result.usage.completionTokens,
+      totalTokens: result.usage.totalTokens,
+    },
+  };
 }
