@@ -11,11 +11,80 @@
             <button @click="handleSubmit" :disabled="loading">
                 {{ loading ? "生成中..." : "生成" }}
             </button>
+            <button class="history-btn" @click="showHistory = true">
+                历史记录
+            </button>
         </div>
+
+        <ElDialog v-model="showHistory" title="历史记录" width="85%" top="5vh">
+            <ElTable :data="logs" stripe style="width: 100%" max-height="65vh" @row-click="toggleExpand">
+                <ElTableColumn type="expand">
+                    <template #default="{ row }">
+                        <div class="detail-wrap">
+                            <div v-if="parseResult(row.text_result).length" class="detail-section">
+                                <h4>文本元素</h4>
+                                <div class="element-grid">
+                                    <div v-for="el in parseResult(row.text_result)" :key="el.name" class="element-card">
+                                        <span class="el-type">{{ el.type }}</span>
+                                        <strong>{{ el.name }}</strong>
+                                        <span v-if="el.text" class="el-text">{{ el.text }}</span>
+                                        <span v-if="el.description" class="el-desc">{{ el.description }}</span>
+                                        <span class="el-pos">位置: ({{ (el.x * 100).toFixed(0) }}%, {{ (el.y * 100).toFixed(0) }}%)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="parseResult(row.image_results).length" class="detail-section">
+                                <h4>图片结果</h4>
+                                <div class="image-grid">
+                                    <div v-for="img in parseResult(row.image_results)" :key="img.name" class="image-card">
+                                        <strong>{{ img.name }}</strong>
+                                        <img v-if="img.imageUrl" :src="img.imageUrl" alt="" />
+                                        <span v-else class="img-fail">生成失败</span>
+                                        <span class="img-prompt">{{ img.prompt }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </ElTableColumn>
+                <ElTableColumn prop="id" label="ID" width="60" />
+                <ElTableColumn prop="created_at" label="时间" width="170" />
+                <ElTableColumn prop="prompt" label="提示词" min-width="200" show-overflow-tooltip />
+                <ElTableColumn label="Token" width="80" align="center">
+                    <template #default="{ row }">
+                        {{ row.tokens_total }}
+                    </template>
+                </ElTableColumn>
+                <ElTableColumn label="元素" width="60" align="center">
+                    <template #default="{ row }">
+                        {{ parseResult(row.text_result).length }}
+                    </template>
+                </ElTableColumn>
+                <ElTableColumn label="图片" width="60" align="center">
+                    <template #default="{ row }">
+                        {{ parseResult(row.image_results).length }}
+                    </template>
+                </ElTableColumn>
+            </ElTable>
+            <div class="pagination-wrap">
+                <ElPagination
+                    v-model:current-page="historyPage"
+                    v-model:page-size="historyPageSize"
+                    :total="historyTotal"
+                    :page-sizes="[10, 20, 50]"
+                    layout="total, sizes, prev, pager, next"
+                    @current-change="fetchLogs"
+                    @size-change="fetchLogs"
+                />
+            </div>
+            <template #footer>
+                <ElButton @click="showHistory = false">关闭</ElButton>
+            </template>
+        </ElDialog>
     </div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { App, Rect, Text } from "leafer-ui";
 import "leafer-editor";
 import "@leafer-in/state";
@@ -24,6 +93,50 @@ import { Flow } from "@leafer-in/flow";
 const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 const prompt = ref("");
 const loading = ref(false);
+
+const showHistory = ref(false);
+const logs = ref<any[]>([]);
+const historyPage = ref(1);
+const historyPageSize = ref(20);
+const historyTotal = ref(0);
+
+const fetchLogs = async () => {
+    try {
+        const params = new URLSearchParams({
+            page: String(historyPage.value),
+            pageSize: String(historyPageSize.value),
+        });
+        const res = await fetch(`${API_BASE}/getLogs?${params}`);
+        const { data } = await res.json();
+        logs.value = data.list;
+        historyTotal.value = data.total;
+    } catch (err) {
+        console.error("获取日志失败:", err);
+    }
+};
+
+watch(showHistory, (val) => {
+    if (val) fetchLogs();
+});
+
+const expandedRows = ref<Set<number>>(new Set());
+const toggleExpand = (row: any) => {
+    const key = row.id;
+    if (expandedRows.value.has(key)) {
+        expandedRows.value.delete(key);
+    } else {
+        expandedRows.value.add(key);
+    }
+};
+
+const parseResult = (str: string | undefined) => {
+    if (!str) return [];
+    try {
+        return JSON.parse(str);
+    } catch {
+        return [];
+    }
+};
 
 interface TextElement {
     type: "image" | "text";
@@ -265,5 +378,99 @@ const createText = (text: string): Text => {
 .floating-input button:disabled {
     background: #666;
     cursor: not-allowed;
+}
+.floating-input .history-btn {
+    background: #555;
+}
+.floating-input .history-btn:hover {
+    background: #666;
+}
+.pagination-wrap {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+}
+.detail-wrap {
+    padding: 12px;
+}
+.detail-section {
+    margin-bottom: 16px;
+}
+.detail-section h4 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: #999;
+}
+.element-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.element-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 12px;
+    background: #2a2a2a;
+    border-radius: 6px;
+    font-size: 13px;
+    min-width: 160px;
+}
+.element-card .el-type {
+    font-size: 11px;
+    color: #42b883;
+    text-transform: uppercase;
+}
+.element-card .el-text,
+.element-card .el-desc {
+    color: #aaa;
+    font-size: 12px;
+}
+.element-card .el-pos {
+    color: #666;
+    font-size: 11px;
+}
+.image-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.image-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    background: #2a2a2a;
+    border-radius: 6px;
+    width: 140px;
+}
+.image-card strong {
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.image-card img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.image-card .img-fail {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 12px;
+    background: #1a1a1a;
+    border-radius: 4px;
+}
+.image-card .img-prompt {
+    font-size: 11px;
+    color: #666;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 </style>

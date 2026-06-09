@@ -4,7 +4,7 @@ import { config } from "./config";
 import { success, fail } from "./response";
 import { genImage } from "./services/genImage";
 import { genText } from "./services/genText";
-import { initDb, insertLog } from "./services/db";
+import { initDb, insertLog, queryLogs } from "./services/db";
 
 const app = express();
 
@@ -26,6 +26,19 @@ const staticDir = path.resolve(
   config.nodeEnv === "production" ? "dist/public" : "public"
 );
 app.use(express.static(staticDir));
+
+app.get("/getLogs", (req: Request, res: Response) => {
+  try {
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : undefined;
+    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string, 10) : undefined;
+    const search = req.query.search as string | undefined;
+    const result = queryLogs({ page, pageSize, search });
+    success(res, result);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "unknown error";
+    fail(res, msg);
+  }
+});
 
 app.get("/{*splat}", (req: Request, res: Response) => {
   res.sendFile(path.join(staticDir, "index.html"));

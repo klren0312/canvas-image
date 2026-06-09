@@ -51,6 +51,54 @@ export async function initDb() {
   db = await loadDb();
 }
 
+export interface LogRecord {
+  id: number;
+  created_at: string;
+  prompt: string;
+  text_result: string;
+  image_results: string;
+  tokens_prompt: number;
+  tokens_completion: number;
+  tokens_total: number;
+}
+
+export function queryLogs(params: {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}): { list: LogRecord[]; total: number; page: number; pageSize: number } {
+  const page = Math.max(1, params.page ?? 1);
+  const pageSize = Math.min(100, Math.max(1, params.pageSize ?? 20));
+  const offset = (page - 1) * pageSize;
+
+  let whereSql = "";
+  const whereArgs: unknown[] = [];
+  if (params.search) {
+    whereSql = "WHERE prompt LIKE ?";
+    whereArgs.push(`%${params.search}%`);
+  }
+
+  const countStmt = db.database.prepare(`SELECT COUNT(*) as count FROM logs ${whereSql}`);
+  countStmt.bind(whereArgs);
+  let total = 0;
+  if (countStmt.step()) {
+    total = countStmt.getAsObject().count as number;
+  }
+  countStmt.free();
+
+  const queryStmt = db.database.prepare(
+    `SELECT * FROM logs ${whereSql} ORDER BY created_at DESC LIMIT ? OFFSET ?`
+  );
+  queryStmt.bind([...whereArgs, pageSize, offset]);
+  const list: LogRecord[] = [];
+  while (queryStmt.step()) {
+    list.push(queryStmt.getAsObject() as unknown as LogRecord);
+  }
+  queryStmt.free();
+
+  return { list, total, page, pageSize };
+}
+
 export function insertLog(input: LogInput): void {
   const stmt = db.database.prepare(`
     INSERT INTO logs (prompt, text_result, image_results, tokens_prompt, tokens_completion, tokens_total)
