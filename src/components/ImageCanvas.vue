@@ -146,6 +146,8 @@ interface TextElement {
     z: number;
     x: number;
     y: number;
+    width?: number;
+    height?: number;
 }
 
 const handleSubmit = async () => {
@@ -201,8 +203,31 @@ const handleSubmit = async () => {
     }
 };
 
+const SUPPORTED_SIZES = [
+    { size: "1024x1024", ratio: 1 },
+    { size: "1024x768", ratio: 1024 / 768 },
+    { size: "768x1024", ratio: 768 / 1024 },
+    { size: "1024x640", ratio: 1024 / 640 },
+    { size: "640x1024", ratio: 640 / 1024 },
+];
+
+const selectImageSize = (width: number, height: number): string => {
+    const aspectRatio = width / height;
+    let best = SUPPORTED_SIZES[0];
+    let bestDiff = Math.abs(best.ratio - aspectRatio);
+    for (const s of SUPPORTED_SIZES) {
+        const diff = Math.abs(s.ratio - aspectRatio);
+        if (diff < bestDiff) {
+            best = s;
+            bestDiff = diff;
+        }
+    }
+    return best.size;
+};
+
 const generateAndInsertImage = async (element: TextElement): Promise<{ name: string; prompt: string; imageUrl: string | null }> => {
     const imagePrompt = `${element.description}，${element.name}`;
+    const size = selectImageSize(element.width || 0.2, element.height || 0.2);
 
     let imageUrl: string | null = null;
     let attempts = 0;
@@ -213,7 +238,7 @@ const generateAndInsertImage = async (element: TextElement): Promise<{ name: str
             const imageRes = await fetch(`${API_BASE}/genImage`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt: imagePrompt }),
+                body: JSON.stringify({ prompt: imagePrompt, size }),
             });
             const { data } = (await imageRes.json()) as {
                 data: { image: string };
@@ -273,18 +298,18 @@ const insertImageToCanvas = (element: TextElement, imageUrl: string) => {
         return;
     }
 
-    const { width = 1080, height = 960 } = leaferApp;
+    const { width: canvasWidth = 1080, height: canvasHeight = 960 } = leaferApp;
 
-    // 根据归一化坐标计算实际位置
-    const x = element.x * width;
-    const y = element.y * height;
+    const x = element.x * canvasWidth;
+    const y = element.y * canvasHeight;
+    const w = (element.width || 0.2) * canvasWidth;
+    const h = (element.height || 0.2) * canvasHeight;
 
-    // 创建图片元素
     const imageRect = new Rect({
         x,
         y,
-        width: 150,
-        height: 150,
+        width: w,
+        height: h,
         fill: {
             type: "image",
             url: imageUrl,
@@ -302,7 +327,6 @@ const insertImageToCanvas = (element: TextElement, imageUrl: string) => {
         },
     });
 
-    // 添加到画布
     leaferApp.tree.add(imageRect);
     console.log(`已插入元素 "${element.name}" 到画布`);
 };
