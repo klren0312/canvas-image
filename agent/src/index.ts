@@ -1,10 +1,10 @@
 import express, { Request, Response } from "express";
 import path from "node:path";
 import { config } from "./config";
-import { success, fail } from "./response";
-import { genImage } from "./services/genImage";
-import { genText } from "./services/genText";
-import { initDb, insertLog, queryLogs } from "./services/db";
+import { handleGenImage } from "./controllers/genImage";
+import { handleGenText } from "./controllers/genText";
+import { handleGetLogs, handleGenLog } from "./controllers/log";
+import { initDb } from "./services/db";
 
 const app = express();
 
@@ -27,74 +27,15 @@ const staticDir = path.resolve(
 );
 app.use(express.static(staticDir));
 
-app.get("/getLogs", (req: Request, res: Response) => {
-  try {
-    const page = req.query.page ? parseInt(req.query.page as string, 10) : undefined;
-    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string, 10) : undefined;
-    const search = req.query.search as string | undefined;
-    const result = queryLogs({ page, pageSize, search });
-    success(res, result);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "unknown error";
-    fail(res, msg);
-  }
-});
+app.get("/getLogs", handleGetLogs);
 
 app.get("/{*splat}", (req: Request, res: Response) => {
   res.sendFile(path.join(staticDir, "index.html"));
 });
 
-app.post("/genImage", async (req: Request, res: Response) => {
-  try {
-    const { prompt, size } = req.body;
-    if (!prompt) {
-      fail(res, "prompt is required");
-      return;
-    }
-    const image = await genImage(prompt, size);
-    success(res, { image });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "unknown error";
-    fail(res, msg);
-  }
-});
-
-app.post("/genText", async (req: Request, res: Response) => {
-  try {
-    const { prompt } = req.body;
-    if (!prompt) {
-      fail(res, "prompt is required");
-      return;
-    }
-    const { elements, usage } = await genText(prompt);
-    success(res, { elements, usage });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "unknown error";
-    fail(res, msg);
-  }
-});
-
-app.post("/genLog", (req: Request, res: Response) => {
-  try {
-    const { prompt, textResult, imageResults, tokensPrompt, tokensCompletion, tokensTotal } = req.body;
-    if (!prompt) {
-      fail(res, "prompt is required");
-      return;
-    }
-    insertLog({
-      prompt,
-      textResult: JSON.stringify(textResult),
-      imageResults: JSON.stringify(imageResults ?? []),
-      tokensPrompt,
-      tokensCompletion,
-      tokensTotal,
-    });
-    success(res, { logged: true });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "unknown error";
-    fail(res, msg);
-  }
-});
+app.post("/genImage", handleGenImage);
+app.post("/genText", handleGenText);
+app.post("/genLog", handleGenLog);
 
 initDb().then(() => {
   app.listen(config.port, () => {
