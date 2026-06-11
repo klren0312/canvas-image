@@ -6,10 +6,11 @@ AI 驱动的文生图画布工具。输入自然语言描述，自动拆解为�
 
 ```
 用户输入文字描述
-  → genText (LLM 拆解为元素列表：主体 + 背景)
-    → genImage (为每个元素生成带透明背景的图片)
-      → 叠加到 LeaferJS 画布
-        → genLog (记录日志到 SQLite)
+  → genText (LLM 拆解为元素列表，含位置 + 尺寸)
+    → 根据宽高比选择图片生成分辨率
+      → genImage (为每个元素生成带透明背景的图片)
+        → 按归一化尺寸插入 LeaferJS 画布
+          → genLog (记录日志到 SQLite)
 ```
 
 ## 项目结构
@@ -19,15 +20,19 @@ canvas-image/                  # Vue 3 前端
 ├── .env                       # VITE_API_BASE
 ├── src/
 │   └── components/
-│       └── ImageCanvas.vue    # 主画布组件 + 历史记录弹框
+│       └── ImageCanvas.vue    # 主画布组件
 
 agent/                        # Express 后端
 ├── .env.example
 ├── src/
-│   ├── index.ts              # 服务入口 + 路由
+│   ├── index.ts              # 服务入口 + 路由注册
 │   ├── config.ts             # 环境配置
 │   ├── response.ts           # API 响应工具
-│   └── services/
+│   ├── controllers/          # 路由控制器
+│   │   ├── genImage.ts       # POST /genImage
+│   │   ├── genText.ts        # POST /genText
+│   │   └── log.ts            # GET /getLogs + POST /genLog
+│   └── services/             # 业务逻辑
 │       ├── db.ts             # SQLite 初始化 + 插入/查询日志
 │       ├── genText.ts        # LLM 文本拆解服务
 │       └── genImage.ts       # 图片生成服务 (SiliconFlow)
@@ -35,12 +40,12 @@ agent/                        # Express 后端
 
 ## API
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| POST | `/genText` | LLM 拆解文本为元素列表 |
-| POST | `/genImage` | 为元素生成图片 |
-| POST | `/genLog` | 记录生成日志到数据库 |
-| GET  | `/getLogs` | 分页查询历史日志 |
+| 方法 | 路径 | 说明 | 参数 |
+|------|------|------|------|
+| POST | `/genText` | LLM 拆解文本为元素列表（含 width/height） | `{ prompt }` |
+| POST | `/genImage` | 为元素生成图片 | `{ prompt, size? }` |
+| POST | `/genLog` | 记录生成日志到数据库 | `{ prompt, textResult, imageResults, ... }` |
+| GET  | `/getLogs` | 分页查询历史日志 | `?page=&pageSize=&search=` |
 
 ## 快速开始
 
