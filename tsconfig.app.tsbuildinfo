@@ -1,1 +1,1 @@
-{"root":["./src/main.ts","./src/vite-env.d.ts","./src/app.vue","./src/components/imagecanvas.vue"],"version":"5.9.3"}
+{"root":["./src/main.ts","./src/vite-env.d.ts","./src/app.vue","./src/components/imagecanvas.vue","./src/components/manualinsertpanel.vue"],"version":"5.9.3"}

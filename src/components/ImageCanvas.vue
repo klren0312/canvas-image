@@ -360,6 +360,7 @@ const handleInsertImageManual = (file: File) => {
     });
 
     leaferApp.tree.add(imageRect);
+    // URL.revokeObjectURL(imageUrl);  // 注意：如果图片显示正常，可以取消注释
     console.log(`已手动插入图片到画布`);
 };
 

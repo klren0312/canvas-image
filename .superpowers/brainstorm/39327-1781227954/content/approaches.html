@@ -1,0 +1,81 @@
+<h2>实现方案对比</h2>
+<p class="subtitle">选择最适合的实现方案</p>
+
+<div class="options">
+  <div class="option" data-choice="minimal" onclick="toggleSelect(this)">
+    <div class="letter">1</div>
+    <div class="content">
+      <h3>最小化实现</h3>
+      <p>仅实现核心功能，保持代码简洁</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>优点</h4>
+          <ul>
+            <li>开发成本低</li>
+            <li>代码维护简单</li>
+            <li>性能开销小</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>缺点</h4>
+          <ul>
+            <li>用户体验一般</li>
+            <li>功能分散</li>
+            <li>需要多次操作</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="complete" onclick="toggleSelect(this)">
+    <div class="letter">2</div>
+    <div class="content">
+      <h3>完整实现</h3>
+      <p>浮动面板包含所有属性编辑控件</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>优点</h4>
+          <ul>
+            <li>用户体验好</li>
+            <li>功能集中</li>
+            <li>操作便捷</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>缺点</h4>
+          <ul>
+            <li>开发成本高</li>
+            <li>界面可能拥挤</li>
+            <li>维护复杂</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="hybrid" onclick="toggleSelect(this)">
+    <div class="letter">3</div>
+    <div class="content">
+      <h3>混合实现</h3>
+      <p>基本控件在面板，高级属性通过右键菜单</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>优点</h4>
+          <ul>
+            <li>平衡功能和简洁</li>
+            <li>渐进式交互</li>
+            <li>易于扩展</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>缺点</h4>
+          <ul>
+            <li>学习成本稍高</li>
+            <li>功能发现性一般</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

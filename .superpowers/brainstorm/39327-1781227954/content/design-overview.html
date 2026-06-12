@@ -1,0 +1,70 @@
+<h2>手动插入功能 - 设计概览</h2>
+<p class="subtitle">基于混合实现方案，面板位于左侧</p>
+
+<div class="section">
+  <h3>1. 浮动面板结构</h3>
+  <div class="mockup">
+    <div class="mockup-header">左侧浮动面板</div>
+    <div class="mockup-body" style="padding: 15px;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div>
+          <div style="color: #42b883; font-size: 12px; margin-bottom: 8px; text-transform: uppercase;">文本插入</div>
+          <input class="mock-input" placeholder="输入文本内容" style="width: 100%; margin-bottom: 5px;">
+          <div style="display: flex; gap: 5px;">
+            <select class="mock-input" style="width: 60%;">
+              <option>32px</option>
+              <option>24px</option>
+              <option>48px</option>
+            </select>
+            <input type="color" value="#ffffff" style="width: 40px; height: 32px;">
+          </div>
+          <button class="mock-button" style="width: 100%; margin-top: 5px;">插入文本</button>
+        </div>
+        <div style="border-top: 1px solid #444;"></div>
+        <div>
+          <div style="color: #42b883; font-size: 12px; margin-bottom: 8px; text-transform: uppercase;">图片上传</div>
+          <div style="border: 2px dashed #444; border-radius: 4px; padding: 20px; text-align: center; color: #666; font-size: 12px;">
+            拖拽图片到此处<br>或点击选择文件
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>2. 功能流程</h3>
+  <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <div style="background: #2a2a2a; padding: 10px; border-radius: 4px; flex: 1; min-width: 200px;">
+      <div style="color: #42b883; font-size: 12px; margin-bottom: 5px;">文本插入流程</div>
+      <div style="font-size: 13px; color: #aaa;">
+        1. 输入文本内容<br>
+        2. 选择字体大小和颜色<br>
+        3. 点击"插入文本"按钮<br>
+        4. 文本出现在画布中央
+      </div>
+    </div>
+    <div style="background: #2a2a2a; padding: 10px; border-radius: 4px; flex: 1; min-width: 200px;">
+      <div style="color: #42b883; font-size: 12px; margin-bottom: 5px;">图片上传流程</div>
+      <div style="font-size: 13px; color: #aaa;">
+        1. 拖拽图片到上传区域<br>
+        2. 图片预览显示<br>
+        3. 点击"插入图片"按钮<br>
+        4. 图片出现在画布中央
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>3. 编辑功能</h3>
+  <div style="background: #2a2a2a; padding: 10px; border-radius: 4px;">
+    <div style="font-size: 13px; color: #aaa;">
+      选中元素后自动显示编辑手柄：<br>
+      - 四角手柄：缩放<br>
+      - 边缘手柄：调整大小<br>
+      - 顶部手柄：旋转<br>
+      - 右键菜单：删除、层级调整
+    </div>
+  </div>
+</div>

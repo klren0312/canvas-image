@@ -1,0 +1,66 @@
+<h2>浮动面板位置选择</h2>
+<p class="subtitle">选择浮动面板在画布中的位置</p>
+
+<div class="options">
+  <div class="option" data-choice="left" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>左侧</h3>
+      <p>面板固定在画布左侧</p>
+      <div class="mockup">
+        <div class="mockup-header">画布布局</div>
+        <div class="mockup-body" style="padding: 10px;">
+          <div style="display: flex; gap: 10px; height: 120px;">
+            <div style="width: 120px; background: #2a2a2a; padding: 10px; border-radius: 4px;">
+              <div style="color: #42b883; font-size: 12px; margin-bottom: 8px;">手动插入</div>
+              <button class="mock-button" style="width: 100%; margin-bottom: 5px;">插入文本</button>
+              <button class="mock-button" style="width: 100%;">上传图片</button>
+            </div>
+            <div style="flex: 1; background: #1a1a1a; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #666;">画布区域</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="right" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>右侧</h3>
+      <p>面板固定在画布右侧</p>
+      <div class="mockup">
+        <div class="mockup-header">画布布局</div>
+        <div class="mockup-body" style="padding: 10px;">
+          <div style="display: flex; gap: 10px; height: 120px;">
+            <div style="flex: 1; background: #1a1a1a; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #666;">画布区域</div>
+            <div style="width: 120px; background: #2a2a2a; padding: 10px; border-radius: 4px;">
+              <div style="color: #42b883; font-size: 12px; margin-bottom: 8px;">手动插入</div>
+              <button class="mock-button" style="width: 100%; margin-bottom: 5px;">插入文本</button>
+              <button class="mock-button" style="width: 100%;">上传图片</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="bottom" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>底部</h3>
+      <p>面板固定在画布底部</p>
+      <div class="mockup">
+        <div class="mockup-header">画布布局</div>
+        <div class="mockup-body" style="padding: 10px;">
+          <div style="display: flex; flex-direction: column; gap: 10px; height: 120px;">
+            <div style="flex: 1; background: #1a1a1a; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #666;">画布区域</div>
+            <div style="height: 60px; background: #2a2a2a; padding: 10px; border-radius: 4px; display: flex; gap: 10px; align-items: center;">
+              <button class="mock-button">插入文本</button>
+              <button class="mock-button">上传图片</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

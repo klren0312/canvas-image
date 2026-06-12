@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Document, Picture } from '@element-plus/icons-vue'
 import type { UploadFile } from 'element-plus'
 import { ElMessage } from 'element-plus'
@@ -75,6 +75,14 @@ const textColor = ref('#ffffff')
 
 const imageFile = ref<File | null>(null)
 const imagePreview = ref('')
+
+watch(showTextDialog, (val) => {
+    if (!val) {
+        textContent.value = ''
+        fontSize.value = 32
+        textColor.value = '#ffffff'
+    }
+})
 
 const handleInsertText = () => {
   if (!textContent.value.trim()) return
