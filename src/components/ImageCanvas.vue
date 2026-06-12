@@ -88,7 +88,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import { App, Rect, Text } from "leafer-ui";
 import "leafer-editor";
 import "@leafer-in/state";
@@ -123,6 +123,8 @@ const fetchLogs = async () => {
 watch(showHistory, (val) => {
     if (val) fetchLogs();
 });
+
+const objectUrls = ref<string[]>([]);
 
 const expandedRows = ref<Set<number>>(new Set());
 const toggleExpand = (row: any) => {
@@ -313,6 +315,7 @@ const handleInsertTextManual = (text: string, fontSize: number, color: string) =
         fill: color,
         fontWeight: "bold",
         textAlign: "center",
+        zIndex: 1,
         editable: true,
     });
 
@@ -320,24 +323,26 @@ const handleInsertTextManual = (text: string, fontSize: number, color: string) =
     console.log(`已手动插入文字到画布`);
 };
 
-const handleInsertImageManual = async (file: File) => {
+const handleInsertImageManual = (file: File) => {
     if (!leaferApp) {
         console.error("Leafer 实例未初始化");
         return;
     }
 
-    // 将 File 转换为 base64 URL
     const imageUrl = URL.createObjectURL(file);
+    objectUrls.value.push(imageUrl);
     
     const { width: canvasWidth = 1080, height: canvasHeight = 960 } = leaferApp;
-    const x = canvasWidth / 2 - 100;
-    const y = canvasHeight / 2 - 100;
+    const width = 200;
+    const height = 200;
+    const x = canvasWidth / 2 - width / 2;
+    const y = canvasHeight / 2 - height / 2;
 
     const imageRect = new Rect({
         x,
         y,
-        width: 200,
-        height: 200,
+        width,
+        height,
         fill: {
             type: "image",
             url: imageUrl,
@@ -417,6 +422,13 @@ onMounted(() => {
     });
 
     leaferApp.sky.add(hintGroup);
+});
+
+onUnmounted(() => {
+    for (const url of objectUrls.value) {
+        URL.revokeObjectURL(url);
+    }
+    objectUrls.value = [];
 });
 const createText = (text: string): Text => {
     return new Text({
