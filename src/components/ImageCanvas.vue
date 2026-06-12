@@ -1,6 +1,10 @@
 <template>
     <div class="relative w-full h-full">
         <div id="leafer-view"></div>
+        <ManualInsertPanel
+            @insert-text="handleInsertTextManual"
+            @insert-image="handleInsertImageManual"
+        />
         <div class="floating-input">
             <input
                 v-model="prompt"
@@ -89,6 +93,7 @@ import { App, Rect, Text } from "leafer-ui";
 import "leafer-editor";
 import "@leafer-in/state";
 import { Flow } from "@leafer-in/flow";
+import ManualInsertPanel from "./ManualInsertPanel.vue";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 const prompt = ref("");
@@ -288,6 +293,69 @@ const insertTextToCanvas = (element: TextElement) => {
 
     leaferApp.tree.add(textEl);
     console.log(`已插入文字元素 "${element.name}" 到画布`);
+};
+
+const handleInsertTextManual = (text: string, fontSize: number, color: string) => {
+    if (!leaferApp) {
+        console.error("Leafer 实例未初始化");
+        return;
+    }
+
+    const { width = 1080, height = 960 } = leaferApp;
+    const x = width / 2;
+    const y = height / 2;
+
+    const textEl = new Text({
+        x,
+        y,
+        text,
+        fontSize,
+        fill: color,
+        fontWeight: "bold",
+        textAlign: "center",
+        editable: true,
+    });
+
+    leaferApp.tree.add(textEl);
+    console.log(`已手动插入文字到画布`);
+};
+
+const handleInsertImageManual = async (file: File) => {
+    if (!leaferApp) {
+        console.error("Leafer 实例未初始化");
+        return;
+    }
+
+    // 将 File 转换为 base64 URL
+    const imageUrl = URL.createObjectURL(file);
+    
+    const { width: canvasWidth = 1080, height: canvasHeight = 960 } = leaferApp;
+    const x = canvasWidth / 2 - 100;
+    const y = canvasHeight / 2 - 100;
+
+    const imageRect = new Rect({
+        x,
+        y,
+        width: 200,
+        height: 200,
+        fill: {
+            type: "image",
+            url: imageUrl,
+            mode: "fit",
+        },
+        editable: true,
+        hoverStyle: {
+            shadow: {
+                x: 0,
+                y: 0,
+                blur: 10,
+                color: "#ffffffaa",
+            },
+        },
+    });
+
+    leaferApp.tree.add(imageRect);
+    console.log(`已手动插入图片到画布`);
 };
 
 let leaferApp: App | null = null;
