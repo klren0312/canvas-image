@@ -58,6 +58,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Document, Picture } from '@element-plus/icons-vue'
+import type { UploadFile } from 'element-plus'
+import { ElMessage } from 'element-plus'
 
 const emit = defineEmits<{
   (e: 'insert-text', text: string, fontSize: number, color: string): void
@@ -81,14 +83,31 @@ const handleInsertText = () => {
   showTextDialog.value = false
 }
 
-const handleImageChange = (file: any) => {
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif']
+
+const handleImageChange = (file: UploadFile) => {
   const rawFile = file.raw
   if (!rawFile) return
-  
+
+  if (!ALLOWED_MIME_TYPES.includes(rawFile.type)) {
+    ElMessage.error('只支持 JPG、PNG、GIF 格式的图片')
+    return
+  }
+
+  if (rawFile.size > MAX_FILE_SIZE) {
+    ElMessage.error('图片大小不能超过 10MB')
+    return
+  }
+
   imageFile.value = rawFile
   const reader = new FileReader()
   reader.onload = (e) => {
     imagePreview.value = e.target?.result as string
+  }
+  reader.onerror = () => {
+    ElMessage.error('图片读取失败，请重新选择')
+    imageFile.value = null
   }
   reader.readAsDataURL(rawFile)
 }
