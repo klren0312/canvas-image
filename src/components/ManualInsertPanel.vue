@@ -161,12 +161,27 @@ const handleInsertImage = () => {
   width: 100%;
 }
 
+.image-uploader :deep(.el-upload) {
+  width: 100%;
+}
+
 .image-uploader :deep(.el-upload-dragger) {
   width: 100%;
   height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+.image-uploader :deep(.el-upload-dragger:hover) {
+  border-color: #42b883;
+}
+
+.image-uploader :deep(.el-upload-dragger.is-dragover) {
+  border-color: #42b883;
+  background: rgba(66, 184, 131, 0.1);
 }
 
 .upload-placeholder {
