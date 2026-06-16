@@ -1,0 +1,79 @@
+<h2>上传图片的功能方案</h2>
+<p class="subtitle">选择图片上传和插入的方式</p>
+
+<div class="options">
+  <div class="option" data-choice="file-picker" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>文件选择器</h3>
+      <p>点击按钮打开系统文件选择器，选择本地图片文件</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>优点</h4>
+          <ul>
+            <li>简单直观</li>
+            <li>无需额外开发</li>
+            <li>支持所有图片格式</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>缺点</h4>
+          <ul>
+            <li>需要用户知道文件位置</li>
+            <li>不支持拖拽</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="drag-drop" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>拖拽上传</h3>
+      <p>支持直接从文件管理器拖拽图片到画布</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>优点</h4>
+          <ul>
+            <li>操作更便捷</li>
+            <li>可直接指定插入位置</li>
+            <li>用户体验更好</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>缺点</h4>
+          <ul>
+            <li>开发成本较高</li>
+            <li>需要处理拖拽区域</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="clipboard" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>剪贴板粘贴</h3>
+      <p>支持从剪贴板粘贴图片（Ctrl+V / Cmd+V）</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>优点</h4>
+          <ul>
+            <li>快速便捷</li>
+            <li>适合截图场景</li>
+            <li>无需文件选择</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>缺点</h4>
+          <ul>
+            <li>用户可能不知道支持</li>
+            <li>仅限剪贴板中的图片</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

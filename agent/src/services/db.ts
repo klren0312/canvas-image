@@ -19,9 +19,7 @@ interface LogInput {
 }
 
 async function loadDb() {
-  const SQL = await initSqlJs({
-    locateFile: (file: string) => path.join(__dirname, file),
-  });
+  const SQL = await initSqlJs();
   let database: Awaited<ReturnType<typeof SQL.Database>>;
   if (fs.existsSync(DB_PATH)) {
     const buffer = fs.readFileSync(DB_PATH);

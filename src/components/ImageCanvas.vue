@@ -1,6 +1,10 @@
 <template>
     <div class="relative w-full h-full">
         <div id="leafer-view"></div>
+        <ManualInsertPanel
+            @insert-text="handleInsertTextManual"
+            @insert-image="handleInsertImageManual"
+        />
         <div class="floating-input">
             <input
                 v-model="prompt"
@@ -84,11 +88,12 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import { App, Rect, Text } from "leafer-ui";
 import "leafer-editor";
 import "@leafer-in/state";
 import { Flow } from "@leafer-in/flow";
+import ManualInsertPanel from "./ManualInsertPanel.vue";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 const prompt = ref("");
@@ -119,6 +124,8 @@ watch(showHistory, (val) => {
     if (val) fetchLogs();
 });
 
+const objectUrls = ref<string[]>([]);
+
 const expandedRows = ref<Set<number>>(new Set());
 const toggleExpand = (row: any) => {
     const key = row.id;
@@ -146,6 +153,8 @@ interface TextElement {
     z: number;
     x: number;
     y: number;
+    width?: number;
+    height?: number;
 }
 
 const handleSubmit = async () => {
@@ -201,8 +210,31 @@ const handleSubmit = async () => {
     }
 };
 
+const SUPPORTED_SIZES = [
+    { size: "1024x1024", ratio: 1 },
+    { size: "1024x768", ratio: 1024 / 768 },
+    { size: "768x1024", ratio: 768 / 1024 },
+    { size: "1024x640", ratio: 1024 / 640 },
+    { size: "640x1024", ratio: 640 / 1024 },
+];
+
+const selectImageSize = (width: number, height: number): string => {
+    const aspectRatio = width / height;
+    let best = SUPPORTED_SIZES[0];
+    let bestDiff = Math.abs(best.ratio - aspectRatio);
+    for (const s of SUPPORTED_SIZES) {
+        const diff = Math.abs(s.ratio - aspectRatio);
+        if (diff < bestDiff) {
+            best = s;
+            bestDiff = diff;
+        }
+    }
+    return best.size;
+};
+
 const generateAndInsertImage = async (element: TextElement): Promise<{ name: string; prompt: string; imageUrl: string | null }> => {
     const imagePrompt = `${element.description}，${element.name}`;
+    const size = selectImageSize(element.width || 0.2, element.height || 0.2);
 
     let imageUrl: string | null = null;
     let attempts = 0;
@@ -213,7 +245,7 @@ const generateAndInsertImage = async (element: TextElement): Promise<{ name: str
             const imageRes = await fetch(`${API_BASE}/genImage`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt: imagePrompt }),
+                body: JSON.stringify({ prompt: imagePrompt, size }),
             });
             const { data } = (await imageRes.json()) as {
                 data: { image: string };
@@ -265,6 +297,73 @@ const insertTextToCanvas = (element: TextElement) => {
     console.log(`已插入文字元素 "${element.name}" 到画布`);
 };
 
+const handleInsertTextManual = (text: string, fontSize: number, color: string) => {
+    if (!leaferApp) {
+        console.error("Leafer 实例未初始化");
+        return;
+    }
+
+    const { width = 1080, height = 960 } = leaferApp;
+    const x = width / 2;
+    const y = height / 2;
+
+    const textEl = new Text({
+        x,
+        y,
+        text,
+        fontSize,
+        fill: color,
+        fontWeight: "bold",
+        textAlign: "center",
+        zIndex: 1,
+        editable: true,
+    });
+
+    leaferApp.tree.add(textEl);
+    console.log(`已手动插入文字到画布`);
+};
+
+const handleInsertImageManual = (file: File) => {
+    if (!leaferApp) {
+        console.error("Leafer 实例未初始化");
+        return;
+    }
+
+    const imageUrl = URL.createObjectURL(file);
+    objectUrls.value.push(imageUrl);
+    
+    const { width: canvasWidth = 1080, height: canvasHeight = 960 } = leaferApp;
+    const width = 200;
+    const height = 200;
+    const x = canvasWidth / 2 - width / 2;
+    const y = canvasHeight / 2 - height / 2;
+
+    const imageRect = new Rect({
+        x,
+        y,
+        width,
+        height,
+        fill: {
+            type: "image",
+            url: imageUrl,
+            mode: "fit",
+        },
+        editable: true,
+        hoverStyle: {
+            shadow: {
+                x: 0,
+                y: 0,
+                blur: 10,
+                color: "#ffffffaa",
+            },
+        },
+    });
+
+    leaferApp.tree.add(imageRect);
+    // URL.revokeObjectURL(imageUrl);  // 注意：如果图片显示正常，可以取消注释
+    console.log(`已手动插入图片到画布`);
+};
+
 let leaferApp: App | null = null;
 
 const insertImageToCanvas = (element: TextElement, imageUrl: string) => {
@@ -273,18 +372,18 @@ const insertImageToCanvas = (element: TextElement, imageUrl: string) => {
         return;
     }
 
-    const { width = 1080, height = 960 } = leaferApp;
+    const { width: canvasWidth = 1080, height: canvasHeight = 960 } = leaferApp;
 
-    // 根据归一化坐标计算实际位置
-    const x = element.x * width;
-    const y = element.y * height;
+    const x = element.x * canvasWidth;
+    const y = element.y * canvasHeight;
+    const w = (element.width || 0.2) * canvasWidth;
+    const h = (element.height || 0.2) * canvasHeight;
 
-    // 创建图片元素
     const imageRect = new Rect({
         x,
         y,
-        width: 150,
-        height: 150,
+        width: w,
+        height: h,
         fill: {
             type: "image",
             url: imageUrl,
@@ -302,7 +401,6 @@ const insertImageToCanvas = (element: TextElement, imageUrl: string) => {
         },
     });
 
-    // 添加到画布
     leaferApp.tree.add(imageRect);
     console.log(`已插入元素 "${element.name}" 到画布`);
 };
@@ -325,6 +423,13 @@ onMounted(() => {
     });
 
     leaferApp.sky.add(hintGroup);
+});
+
+onUnmounted(() => {
+    for (const url of objectUrls.value) {
+        URL.revokeObjectURL(url);
+    }
+    objectUrls.value = [];
 });
 const createText = (text: string): Text => {
     return new Text({
