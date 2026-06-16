@@ -147,6 +147,7 @@ const handleInsertImage = () => {
 .tool-icons {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
   background: rgba(0, 0, 0, 0.8);
   padding: 8px;
@@ -155,6 +156,11 @@ const handleInsertImage = () => {
 }
 
 .tool-icons .el-button {
+  width: 32px;
+  height: 32px;
+  padding: 8px;
+  margin-left: 0;
+  box-sizing: border-box;
   background: #333;
   border-color: #444;
   color: white;
